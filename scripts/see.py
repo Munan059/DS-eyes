@@ -536,7 +536,7 @@ def build_parser():
     p.add_argument("--backend", default="", help="用哪个后端（config.json 里 backends 的名字），默认 default_backend")
     p.add_argument("--json", action="store_true", help="输出 JSON，方便程序解析")
     p.add_argument("--max-side", type=int, default=None, help="图片长边压到多少像素，0 表示不压，默认 1536")
-    p.add_argument("--max-tokens", type=int, default=8000, help="回答长度上限，默认 8000")
+    p.add_argument("--max-tokens", type=int, default=16000, help="回答长度上限，默认 16000")
     p.add_argument("--timeout", type=int, default=180, help="单次请求超时秒数，默认 180")
     p.add_argument("--api-key", default="", help="临时覆盖当前后端的 key")
     p.add_argument("--base-url", default="", help="临时覆盖当前后端的接口地址")

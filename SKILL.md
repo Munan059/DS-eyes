@@ -1,6 +1,6 @@
 ---
 name: deepseek-eyes
-description: 给看不见图的纯文本模型（DeepSeek V4 等）外接一副眼睛。当任务里出现图片、截图、设计稿、报错截图、图表、扫描件，或者用户说"看这张图/这个界面/这个报错/帮我复刻/提取文字/读一下数据"时，必须用本技能把图交给一个支持图片输入的多模态模型（GPT-5.6 Luna、GPT-4o、Qwen-VL，或任意 OpenAI 兼容中转站），识别成文字，再基于文字继续干活。禁止靠文件名或上下文猜测图片内容。
+description: 给看不见图的纯文本模型（DeepSeek V4 等）外接一副眼睛。当任务里出现图片、截图、设计稿、报错截图、图表、扫描件，或者用户说"看这张图/这个界面/这个报错/帮我复刻/提取文字/读一下数据"时，必须用本技能把图交给一个支持图片输入的多模态模型（智谱 GLM、GPT-5.6 Luna、GPT-4o、Qwen-VL，或任意 OpenAI 兼容中转站），识别成文字，再基于文字继续干活。禁止靠文件名或上下文猜测图片内容。
 license: MIT
 ---
 
@@ -32,7 +32,7 @@ license: MIT
 ```
 
 `--backend <名字>` 用来选用配置里的哪个多模态后端；不写就用 `default_backend`。
-例如用户明确想要另一个模型时，加 `--backend gpt4o`。
+例如 `--backend luna`、`--backend glm`（智谱）、`--backend gpt4o` 切换模型。
 
 不写 `-q` 时做通用详细描述；写了 `-q` 就只回答那个具体问题（适合"右下角那个数字是多少"这类）。
 
@@ -43,15 +43,15 @@ license: MIT
 {{SEE_CMD}} ./design/home.png -q "这个界面用了哪些主色，给十六进制色值"
 {{SEE_CMD}} ./before.png ./after.png -q "对比这两张图的区别"
 {{SEE_CMD}} ./dashboard.png --json                 # 要结构化结果时加 --json
-{{SEE_CMD}} ./page.png --backend gpt4o             # 用 gpt4o 后端看
+{{SEE_CMD}} ./page.png --backend luna               # 用 Luna 后端看
 ```
 
-其他参数：`--max-side 2048`（图太糊时提高清晰度）、`--check`（自检配置和网络）、
-`--list-backends`（列出已配置的后端）。
+其他参数：`--max-side 2048`（图太糊时提高清晰度）、`--max-tokens`（回答长度上限，默认 16000）、
+`--check`（自检配置和网络）、`--list-backends`（列出已配置的后端）。
 
 ## 省钱守则
 
-多模态模型按量计费，具体单价看你用的后端（写在配置文件里）。要守规矩：
+多模态模型按量计费，具体单价看你用的后端（写在配置文件里，或见各平台官网）。要守规矩：
 
 1. **一次问全。** 调用前先想清楚需要哪些信息，写进 `-q` 一次问完，不要看一次问一句。
 2. **纯文字任务不要调这个脚本。** 你自己能干的活自己干，眼睛只在需要看图时睁开。
@@ -72,22 +72,23 @@ license: MIT
 
 | 现象 | 原因和处理 |
 |---|---|
-| 提示没有任何后端 | 让用户跑一次 `install.py` 在配置里加上 backends |
+| 还没装过 / 没有任何后端 | 让用户双击 `install_gui.py`（图形界面：选平台、粘贴 key、点安装），或运行 `install.py` 在配置里加上 backends |
 | 提示某后端没配 api_key | 让用户编辑 `~/.deepseek-eyes/config.json`，在该后端里填 api_key |
 | HTTP 401 / 403 | key 和后端不配套（官方 key 配了中转地址，或反过来） |
 | HTTP 404 | 模型名写错，或中转站地址要带 `/v1` 结尾 |
 | 连不上、超时 | 国内直连 `api.openai.com` 通常不通，可改中转地址或设代理 `HTTPS_PROXY` |
 
 配置文件在 `~/.deepseek-eyes/config.json`（Windows 是 `C:\Users\<用户名>\.deepseek-eyes\config.json`），
-结构示例：
+结构示例（可同时接多个后端，各用各的 key）：
 
 ```json
 {
-  "default_backend": "luna",
+  "default_backend": "glm",
   "backends": {
-    "luna":  {"api_key": "sk-...",  "base_url": "https://api.openai.com/v1", "model": "gpt-5.6-luna"},
-    "gpt4o": {"api_key": "sk-...",  "base_url": "https://api.openai.com/v1", "model": "gpt-4o"},
-    "qwen":  {"api_key": "sk-...",  "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1", "model": "qwen-vl-max"}
+    "glm":   {"api_key": "sk-...", "base_url": "https://open.bigmodel.cn/api/paas/v4", "model": "glm-4v-plus"},
+    "luna":  {"api_key": "sk-...", "base_url": "https://api.openai.com/v1", "model": "gpt-5.6-luna"},
+    "gpt4o": {"api_key": "sk-...", "base_url": "https://api.openai.com/v1", "model": "gpt-4o"},
+    "qwen":  {"api_key": "sk-...", "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1", "model": "qwen-vl-max"}
   }
 }
 ```
