@@ -14,7 +14,7 @@ deepseek-eyes 一键安装器（轻量版）
 想用 Gemini / Claude，把 base_url 填成它们对应的 OpenAI 兼容地址即可。
 
 用法：
-  python install.py                                  # 交互式安装，可添加多个后端，推荐
+  python install.py                                  # 交互式安装：先选平台（OpenAI/阿里/智谱/Gemini），再填 key，可加多个后端，推荐
   python install.py --all                            # 装到所有支持的 agent，不管有没有检测到
   python install.py --backend luna --api-key sk-xxx --yes
   python install.py --backend gpt4o --base-url https://openrouter.ai/api/v1 --api-key sk-xxx --yes
@@ -48,6 +48,47 @@ DEFAULT_MODEL_OPENAI = "gpt-5.6-luna"
 
 # Luna 官方降价后公开单价（美元/百万 token），仅当模型正好是 gpt-5.6-luna 时预填
 LUNA_PRICE = {"price_in": 0.20, "price_cached_in": 0.02, "price_out": 1.20}
+
+# 常见平台预设：选一个就自动填好 base_url 和默认 model（都走 OpenAI 兼容协议）
+PLATFORMS = [
+    {"key": "openai", "label": "OpenAI（GPT-5.6 Luna / GPT-4o）",
+     "base_url": "https://api.openai.com/v1", "model": "gpt-5.6-luna"},
+    {"key": "qwen", "label": "阿里通义千问 Qwen-VL（DashScope）",
+     "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1", "model": "qwen-vl-max"},
+    {"key": "glm", "label": "智谱 GLM（BigModel）",
+     "base_url": "https://open.bigmodel.cn/api/paas/v4", "model": "glm-4v-plus"},
+    {"key": "gemini", "label": "Google Gemini（OpenAI 兼容）",
+     "base_url": "https://generativelanguage.googleapis.com/v1beta/openai", "model": "gemini-2.0-flash"},
+    {"key": "custom", "label": "其他 OpenAI 兼容中转站 / 自定义",
+     "base_url": "", "model": ""},
+]
+
+
+def choose_platform():
+    """交互式选平台，返回选中的预设字典。"""
+    say("  可选平台（都走 OpenAI 兼容协议；选一个就自动填好接口地址和模型）：")
+    for i, p in enumerate(PLATFORMS, 1):
+        say("   %d. %s" % (i, p["label"]))
+    while True:
+        c = ask("   选平台（输入数字 1-%d，或输入 custom 走自定义）：" % len(PLATFORMS), "1")
+        if c.lower() == "custom":
+            return PLATFORMS[-1]
+        try:
+            idx = int(c) - 1
+        except ValueError:
+            idx = -1
+        if 0 <= idx < len(PLATFORMS):
+            return PLATFORMS[idx]
+        say("   输入有误，请重选。")
+
+
+def platform_by_key(key):
+    if not key:
+        return None
+    for p in PLATFORMS:
+        if p["key"] == key:
+            return p
+    return None
 
 if hasattr(sys.stdout, "reconfigure"):
     try:
@@ -293,41 +334,52 @@ def step_copy_script():
     say("核心脚本已装到：%s" % SEE_DST)
 
 
-def _add_one_backend(name, args, backends):
-    """填好一个后端（OpenAI 兼容协议），写进 backends。"""
+def _add_one_backend(name, args, backends, platform=None):
+    """填好一个后端（OpenAI 兼容协议），写进 backends。platform 为预选平台字典。"""
     b = {"api_key": ""}
-    base_url = args.base_url
-    model = args.model
 
-    non_interactive = args.api_key and args.yes and not sys.stdin.isatty()
-    if not non_interactive:
-        say("  （OpenAI 兼容协议：Luna / GPT-4o / Qwen-VL 都走这套；中转站也走这套）")
-        if not base_url:
-            say("  接口地址：1) OpenAI 官方 %s  2) 中转站/聚合站（如 https://openrouter.ai/api/v1）" % OFFICIAL_BASE)
-            c = ask("  选 1 / 2，或直接粘贴地址（回车用官方）：", "1")
-            if c == "1":
-                base_url = OFFICIAL_BASE
-            elif c == "2":
-                base_url = ask("  粘贴中转站地址：", OFFICIAL_BASE)
-            elif c:
-                base_url = c
-            else:
-                base_url = OFFICIAL_BASE
+    non_interactive = bool(args.api_key) and args.yes and not (sys.stdin and sys.stdin.isatty())
+
+    if non_interactive:
+        plat = platform_by_key(args.backend)
+        base_url = args.base_url or (plat["base_url"] if plat else OFFICIAL_BASE)
+        model = args.model or (plat["model"] if plat else DEFAULT_MODEL_OPENAI)
         b["base_url"] = normalize_openai_base(base_url)
-        mm = model or ask("  模型名（官方默认 %s；中转站可能不同）：" % DEFAULT_MODEL_OPENAI, DEFAULT_MODEL_OPENAI)
-        b["model"] = mm
-        if mm == DEFAULT_MODEL_OPENAI:
+        b["model"] = model
+        if model == DEFAULT_MODEL_OPENAI:
             b.update(LUNA_PRICE)
-    else:
-        b["base_url"] = normalize_openai_base(base_url or OFFICIAL_BASE)
-        b["model"] = model or DEFAULT_MODEL_OPENAI
-        if (model or DEFAULT_MODEL_OPENAI) == DEFAULT_MODEL_OPENAI:
-            b.update(LUNA_PRICE)
-
-    if args.api_key:
         b["api_key"] = args.api_key
+        backends[name] = b
+        say("  已记录后端 %s（模型 %s）" % (name, b["model"]))
+        return b
+
+    # 交互模式：没给地址/模型就先选平台，自动带出预设
+    if platform is None and not args.base_url and not args.model:
+        platform = choose_platform()
+    preset_base = (platform or {}).get("base_url", "") or args.base_url or ""
+    preset_model = (platform or {}).get("model", "") or args.model or ""
+    is_custom = (platform or {}).get("key") == "custom" or (not preset_base and not preset_model)
+
+    if args.base_url:
+        base_url = args.base_url
+    elif is_custom:
+        base_url = ask("  接口地址（OpenAI 兼容，一般带 /v1）：", "")
     else:
-        b["api_key"] = ask("  粘贴 %s 的 API key：" % name, "")
+        base_url = ask("  接口地址（回车用 %s）：" % preset_base, preset_base)
+
+    if args.model:
+        model = args.model
+    elif is_custom:
+        model = ask("  模型名：", "")
+    else:
+        model = ask("  模型名（回车用 %s）：" % preset_model, preset_model)
+
+    b["base_url"] = normalize_openai_base(base_url)
+    b["model"] = model
+    if model == DEFAULT_MODEL_OPENAI:
+        b.update(LUNA_PRICE)
+
+    b["api_key"] = args.api_key or ask("  粘贴 %s 的 API key：" % (name or "该平台"), "")
     backends[name] = b
     say("  已记录后端 %s（模型 %s）" % (name, b["model"]))
     return b
@@ -347,15 +399,16 @@ def step_config(args):
         idx = 0
         while True:
             idx += 1
+            platform = choose_platform() if idx == 1 else None
             if idx == 1:
-                name = ask("第一个后端起个名字（比如 luna / gpt4o / qwen，回车用 luna）：", "luna")
+                name = ask("这个后端起个名字（回车用 %s）：" % platform["key"], platform["key"])
             else:
                 name = ask("下一个后端起个名字（回车结束）：", "")
                 if not name:
                     break
             if name in backends and not ask_yes("  %s 已存在，覆盖它吗？" % name, True):
                 continue
-            _add_one_backend(name, args, backends)
+            _add_one_backend(name, args, backends, platform=platform)
             if not ask_yes("还要再加一个后端吗？", False):
                 break
         if not backends:

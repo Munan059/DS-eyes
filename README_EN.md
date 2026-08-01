@@ -34,49 +34,34 @@ Images are always sent base64-encoded, and every backend speaks the OpenAI-compa
 
 ## 🚀 Quick start
 
+There are two ways to install deepseek-eyes — pick whichever you like:
+
+- **🖱 GUI installer (recommended, no command line)** — download, double-click `install_gui.py`, pick a platform, paste your key, hit "Install".
+- **⌨ Command-line installer `install.py`** — one command if you like the terminal, or run it interactively to be guided step by step.
+
 ### Requirements
 
-- Python 3.8 or newer
+- Python 3.8 or newer (tkinter ships with Python, no separate install)
 - At least one API key for an image-capable multimodal model (OpenAI, or any OpenAI-compatible relay)
 
 > Your DeepSeek key does not go here — that one belongs to your agent app.
 
-### 1️⃣ Run the installer
+### Method 1: GUI installer (no command line)
 
-```bash
-python install.py
-```
+1. On the GitHub page click **Code → Download ZIP**, then unzip to any folder.
+2. Double-click **`install_gui.py`** inside it (Windows will open it with Python).
+   - If double-clicking does nothing: right-click → "Open with" → choose your Python; or type `cmd` in the folder's address bar, press Enter, then run `python install_gui.py`.
+3. In the window that opens:
+   - ① Pick a platform (OpenAI / Qwen / GLM / Gemini / custom)
+   - ② Paste that backend's API key (it shows as `****`, never in plain text next to it)
+4. Click **"Install"** — progress prints line by line, and a popup says "Done" at the end.
+5. **Restart your AI client** (WorkBuddy / Claude Code / etc.); after that, just send images and they work.
 
-On Windows, if `python` isn't found, use the full path instead:
+> Everything is written only to your machine (`~/.deepseek-eyes/config.json` holds the key). The key never enters any chat box or web page.
 
-```bash
-"C:\Users\YourName\AppData\Local\Programs\Python\Python312\python.exe" install.py
-```
+### Method 2: Command-line installer
 
-### 2️⃣ Add backends (as many as you like)
-
-For each backend, answer a few prompts; add as many as you want, then pick one to be the default:
-
-| Question | What to answer |
-| --- | --- |
-| Backend name | Name this key set, e.g. `luna` / `gpt4o` / `qwen` |
-| Base URL | 1 OpenAI official · 2 a relay (e.g. openrouter), or paste your own address |
-| API key | Paste the key for that backend |
-| Model name | Usually just press Enter for the default; relays may need their own model name |
-| Add another? | Press Enter to finish, or `y` to add the next one |
-
-The installer runs a self-check at the end. When you see "眼睛可以用了" (the eyes are ready), you're done.
-
-### 3️⃣ Restart your agent app and just talk
-
-```
-Take a look at this image D:\shots\bug.png
-```
-
-It calls the eyes on its own. You don't need to memorize any command.
-
-<details>
-<summary>Prefer non-interactive? One command</summary>
+One command to install (replace the key with your own):
 
 ```bash
 python install.py --backend luna --api-key sk-your-key --base-url https://api.openai.com/v1 --all --yes
@@ -89,13 +74,23 @@ python install.py --backend gpt4o --api-key sk-your-key --base-url https://api.o
 ```
 
 Other flags: `--targets workbuddy,claude` to install for specific apps, `--deps` to also install
-optional dependencies, `--uninstall` to remove.
+optional dependencies, `--uninstall` to remove. Running plain `python install.py` with no flags starts
+an interactive mode that asks you for platform, key, and whether to add more backends.
 
-</details>
+### Using it after install
+
+Restart your agent app, then just talk as usual:
+
+```
+Take a look at this image D:\shots\bug.png
+```
+
+It calls the eyes on its own. You don't need to memorize any command. More usage in [Usage](#-usage) below.
 
 ## ✨ Features
 
 - **🔌 Zero dependencies** — the core script uses only the Python standard library. Pillow is optional, for shrinking big images
+- **🖱 GUI installer** — if you'd rather not touch the terminal, double-click `install_gui.py`, pick a platform, paste your key, and install; the key is masked the whole time and never leaks
 - **🎯 One mode that says it clearly** — a general detailed description by default; add `-q` to ask only that one question, cheaper than a vague "describe this"
 - **🧩 Install once, works everywhere** — WorkBuddy, Claude Code, Codex, Trae, ZCode, and anything that reads `AGENTS.md`
 - **🚀 Switch models freely** — wire up Luna / GPT-4o / Qwen-VL together, switch with `--backend name`, each with its own key
@@ -125,7 +120,8 @@ A few key decisions:
 
 ```
 deepseek-eyes/
-├── install.py          # the installer — the only file you interact with
+├── install_gui.py      # GUI installer (beginner-friendly, double-click to run)
+├── install.py          # command-line installer — the file you interact with
 ├── SKILL.md            # the manual your agent reads, distributed on install
 └── scripts/
     └── see.py          # the actual "eyes", pure standard library
@@ -227,7 +223,7 @@ python ~/.deepseek-eyes/see.py --list-backends
 
 | Symptom | Cause and fix |
 | --- | --- |
-| Says there are no backends | Re-run `install.py` and add `backends` to the config |
+| Says there are no backends | Re-run `install_gui.py` (or `install.py`) and add `backends` to the config |
 | Says a backend has no api_key | Edit `~/.deepseek-eyes/config.json` and set `api_key` for that backend |
 | HTTP 401 / 403 | Key and backend don't match (official key with a relay URL, or vice versa) |
 | HTTP 404 | Wrong model name; relays usually need `/v1` at the end of the base URL |

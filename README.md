@@ -27,49 +27,34 @@ DeepSeek V4 的接口只认文字，看不见图。这个工具不换模型、�
 
 ## 🚀 快速开始
 
+deepseek-eyes 有两条安装路子，挑顺手的来：
+
+- **🖱 图形界面安装器（推荐小白，不用碰命令行）** — 下载后双击 `install_gui.py`，选平台、粘贴 key、点「安装」。
+- **⌨ 命令行安装器 `install.py`** — 喜欢敲命令的话一行搞定，也支持交互问答。
+
 ### 环境要求
 
-- Python 3.8 以上
-- 至少一个支持图片输入的多模态识别模型 API key（OpenAI 官方，或任意 OpenAI 兼容中转站）
+- Python 3.8 以上（tkinter 一般随 Python 自带，不用单独装）
+- 一个支持看图的多模态模型 API key（OpenAI 官方，或任意 OpenAI 兼容中转站）
 
 > DeepSeek 的 key 不用在这里填——那是你 agent 软件自己在用的。
 
-### 1️⃣ 运行安装器
+### 方式一：图形界面安装器（不用命令行）
 
-```bash
-python install.py
-```
+1. 在 GitHub 页面点 **Code → Download ZIP**，解压到任意文件夹。
+2. 双击里面的 **`install_gui.py`**（Windows 会用 Python 打开它）。
+   - 万一双击没反应：右键 →「打开方式」→ 选你的 Python；或在文件夹地址栏输入 `cmd` 回车后执行 `python install_gui.py`。
+3. 在弹出的窗口里：
+   - ① 选平台（OpenAI / 通义千问 / 智谱 / Gemini / 自定义）
+   - ② 把对应后端的 API key 粘贴进去（输入时显示为 `****`，旁边看不到明文）
+4. 点 **「安 装」**，窗口里会一行行打印进度，最后弹窗提示「装好了」。
+5. **重启你的 AI 客户端**（WorkBuddy / Claude Code 等），之后直接发图片就能用。
 
-Windows 上如果提示找不到 python，把前面换成 Python 的完整路径，例如：
+> 整个过程只在你电脑上写文件（`~/.deepseek-eyes/config.json` 存着 key），key 不会进任何聊天框或网页。
 
-```bash
-"C:\Users\你的用户名\AppData\Local\Programs\Python\Python312\python.exe" install.py
-```
+### 方式二：命令行安装器
 
-### 2️⃣ 按提示添加后端（可加多个）
-
-每加一个后端，回答这几项；想接几个就加几个，最后选一个做默认：
-
-| 问题 | 怎么答 |
-| --- | --- |
-| 后端名字 | 给这组 key 起个名，比如 `luna` / `gpt4o` / `qwen` |
-| 接口地址 | 选 1 OpenAI 官方 · 2 中转站（如 openrouter），或自己粘贴地址 |
-| API key | 粘贴对应后端的 key |
-| 模型名 | 一般直接回车用默认；用中转站时可能要改成它家的模型名 |
-| 还要加吗 | 回车结束，或输 y 继续加下一个 |
-
-安装器会自动跑一次自检，看到"眼睛可以用了"就成了。
-
-### 3️⃣ 重启 agent 软件，直接说人话
-
-```
-看看这张图 D:\shots\bug.png
-```
-
-它自己就会调用眼睛，不需要你记任何命令。
-
-<details>
-<summary>不想交互？一条命令装完</summary>
+一条命令装完（把 key 换成你自己的）：
 
 ```bash
 python install.py --backend luna --api-key sk-你的key --base-url https://api.openai.com/v1 --all --yes
@@ -81,13 +66,22 @@ python install.py --backend luna --api-key sk-你的key --base-url https://api.o
 python install.py --backend gpt4o --api-key sk-你的key --base-url https://api.openai.com/v1 --yes
 ```
 
-可用参数：`--targets workbuddy,claude` 只装指定软件、`--deps` 顺带装可选依赖、`--uninstall` 卸载。
+可用参数：`--targets workbuddy,claude` 只装指定软件、`--deps` 顺带装可选依赖、`--uninstall` 卸载。不带任何参数直接 `python install.py` 会进入交互模式，一步一步问你选平台、填 key、要不要再加后端。
 
-</details>
+### 装好后怎么用
+
+重启 agent 软件，然后像平时一样说话就行：
+
+```
+看看这张图 D:\shots\bug.png
+```
+
+它自己会调用眼睛，不需要你记任何命令。更多用法看下面的 [怎么用](#-怎么用)。
 
 ## ✨ 功能亮点
 
 - **🔌 零依赖** — 核心脚本只用 Python 标准库，装完就能跑。Pillow 是可选的，只用来压缩大图省钱
+- **🖱 图形界面安装器** — 不想碰命令行的，双击 `install_gui.py` 选平台、粘贴 key、点安装即可；key 输入时全程掩码，绝不外泄
 - **🎯 一个模式讲清楚** — 默认做通用详细描述；写上 `-q` 就只回答那个具体问题，比笼统的"描述一下"更省 token
 - **🧩 一次装遍所有 agent** — WorkBuddy、Claude Code、Codex、Trae、ZCode，以及任何认 `AGENTS.md` 的工具
 - **🚀 多模型随便切** — 同时接 Luna、GPT-4o、Qwen-VL，用 `--backend 名字` 切换，各带各的 key
@@ -116,7 +110,8 @@ python install.py --backend gpt4o --api-key sk-你的key --base-url https://api.
 
 ```
 deepseek-eyes/
-├── install.py          # 一键安装器，你只跟它打交道
+├── install_gui.py      # 图形界面安装器（小白首选，双击即用）
+├── install.py          # 命令行安装器，你只跟它打交道
 ├── SKILL.md            # 给 agent 读的说明书，安装时分发到各软件
 └── scripts/
     └── see.py          # 真正干活的"眼睛"，纯标准库
@@ -207,7 +202,7 @@ python ~/.deepseek-eyes/see.py --list-backends    # 只看后端列表
 
 | 现象 | 原因和处理 |
 | --- | --- |
-| 提示没有任何后端 | 重跑 `install.py` 在配置里加上 `backends` |
+| 提示没有任何后端 | 重跑 `install_gui.py`（或 `install.py`）在配置里加上 `backends` |
 | 提示某后端没配 api_key | 编辑 `~/.deepseek-eyes/config.json`，在该后端里填 `api_key` |
 | HTTP 401 / 403 | key 和后端不配套（官方 key 配了中转地址，或反过来） |
 | HTTP 404 | 模型名写错；中转站地址要带 `/v1` 结尾 |
