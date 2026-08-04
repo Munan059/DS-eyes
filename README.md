@@ -62,7 +62,7 @@ python install.py --backend luna --api-key sk-你的key --base-url https://api.o
 加第二个后端（比如 GPT-4o）再跑一次，用 `--backend` 区分：
 
 ```bash
-python install.py --backend gpt4o --api-key sk-你的key --base-url https://api.openai.com/v1 --yes
+python install.py --backend openai --api-key sk-你的key --base-url https://api.openai.com/v1 --yes
 ```
 
 可用参数：`--targets workbuddy,claude` 只装指定软件、`--deps` 顺带装可选依赖、`--uninstall` 卸载。不带任何参数直接 `python install.py` 会进入交互模式，一步一步问你选平台、填 key、要不要再加后端。
