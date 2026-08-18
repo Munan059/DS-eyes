@@ -2,9 +2,11 @@
 
 [English](README_EN.md) | 中文
 
-# deepseek-eyes
+# DS-eyes
 
 **给 DeepSeek 这类纯文本模型外接一副眼睛：只在撞见图片的那一秒，把那一张图单独发给多模态模型转成文字——平时零额外开销、零额外依赖，也不改动你原有的模型与配置。**
+
+> 注：本仓库名为 **DS-eyes**；工具安装后的包名与配置目录仍为 `deepseek-eyes`（位于 `~/.deepseek-eyes/`）。
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB)
 ![依赖](https://img.shields.io/badge/依赖-仅标准库-2ea44f)
@@ -108,7 +110,7 @@ python install.py --backend openai --api-key sk-你的key --base-url https://api
 ## 📂 目录结构
 
 ```
-deepseek-eyes/
+DS-eyes/
 ├── install_gui.py      # 图形界面安装器（小白首选，双击即用）
 ├── install.py          # 命令行安装器，你只跟它打交道
 ├── SKILL.md            # 给 agent 读的说明书，安装时分发到各软件

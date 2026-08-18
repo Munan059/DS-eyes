@@ -2,9 +2,11 @@
 
 [中文](README.md) | **English**
 
-# deepseek-eyes
+# DS-eyes
 
 **Give DeepSeek-class text-only models a pair of eyes: the moment an image shows up, outsource just that one picture to a multimodal model and get text back — zero extra cost or dependency the rest of the time, and your existing model and config stay untouched.**
+
+> Note: this repository is named **DS-eyes**; the installed package and config directory are still called `deepseek-eyes` (located at `~/.deepseek-eyes/`).
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB)
 ![Dependencies](https://img.shields.io/badge/dependencies-stdlib%20only-2ea44f)
@@ -119,7 +121,7 @@ A few key decisions:
 ## 📂 Project layout
 
 ```
-deepseek-eyes/
+DS-eyes/
 ├── install_gui.py      # GUI installer (beginner-friendly, double-click to run)
 ├── install.py          # command-line installer — the file you interact with
 ├── SKILL.md            # the manual your agent reads, distributed on install
